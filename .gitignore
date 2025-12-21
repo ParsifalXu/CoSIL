@@ -1,0 +1,4 @@
+mirror_cache/
+repo_structures/
+results/
+*.pyc

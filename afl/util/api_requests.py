@@ -81,8 +81,7 @@ def request_chatgpt_engine(config, logger, base_url=None, max_retries=40, timeou
     else:
         # client = openai.OpenAI(api_key="", base_url="")
         client = openai.OpenAI(api_key="",
-                               base_url="https://api.siliconflow.cn/v1")
-
+                               base_url="https://api.openai.com/v1")
 
     while ret is None and retries < max_retries:
         try:

@@ -110,10 +110,12 @@ def localize(args):
     #     swe_bench_data = load_from_disk("./datasets/SWE-bench_Verified_test")
     # else:
     #     swe_bench_data = load_from_disk("./datasets/SWE-bench_Lite_test")
-    if "sampled" in args.dataset:
-        swe_bench_data = load_from_disk(f"./datasets/{args.dataset}")
-    else:
-        swe_bench_data = load_dataset(args.dataset, split="test")
+    # if "sampled" in args.dataset:
+    #     swe_bench_data = load_from_disk(f"./datasets/{args.dataset}")
+    # else:
+    #     swe_bench_data = load_dataset(args.dataset, split="test")
+    with open(os.getcwd() + "/pattern_queries_new_format_single.json", 'r') as f:
+        swe_bench_data = json.load(f)
     existing_instance_ids = (
         load_existing_instance_ids(args.output_file) if args.skip_existing else set()
     )
