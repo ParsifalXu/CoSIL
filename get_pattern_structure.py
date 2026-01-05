@@ -6,7 +6,7 @@ from get_repo_structure.get_repo_structure import get_project_structure_from_scr
 # 加载数据集
 # print("加载数据")
 # swe_bench_data = load_from_disk("./datasets/SWE-bench_Lite_test")
-json_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pattern_queries_new_format_single.json')
+json_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pattern_queries_new_format.json')
 with open(json_file_path, 'r') as f:
     bench_data = json.load(f)
 
