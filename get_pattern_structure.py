@@ -15,7 +15,7 @@ with open(json_file_path, 'r') as f:
 for bug in bench_data:
     instance_id = bug['instance_id']
     # 构造 JSON 文件路径
-    json_file_path = f"./repo_structures_pattern/{instance_id}.json"
+    json_file_path = f"./repo_structures/{instance_id}.json"
 
     # 检查文件是否已经存在，如果存在则跳过
     if os.path.exists(json_file_path):
