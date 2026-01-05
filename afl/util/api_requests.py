@@ -198,23 +198,27 @@ def create_bedrock_config(
     system_message: str = "You are a helpful assistant.",
     model: str = "apac.anthropic.claude-3-5-sonnet-20241022-v2:0",
 ) -> Dict:
+    print(f"DEBUG: create_bedrock_config called with model: {model}")
     if isinstance(message, list):
         messages = message
     else:
         messages = [{"role": "user", "content": message}]
     
+    body_content = {
+        "anthropic_version": "bedrock-2023-05-31",
+        "max_tokens": max_tokens,
+        "temperature": temperature,
+        "system": system_message,
+        "messages": messages
+    }
+    
     config = {
         "modelId": model,
         "contentType": "application/json",
         "accept": "application/json",
-        "body": json.dumps({
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": max_tokens,
-            "temperature": temperature,
-            "system": system_message,
-            "messages": messages
-        })
+        "body": json.dumps(body_content)
     }
+    print(f"DEBUG: Bedrock config created with modelId: {config['modelId']}")
     return config
 
 
@@ -222,25 +226,33 @@ def request_bedrock_engine(config, logger, max_retries=40, timeout=500):
     ret = None
     retries = 0
     
+    print(f"DEBUG: request_bedrock_engine called with modelId: {config.get('modelId')}")
+    
     try:
         # Initialize Bedrock client
         logger.info("Initializing Bedrock client...")
+        print("DEBUG: About to create boto3 bedrock-runtime client")
         bedrock_client = boto3.client(
             'bedrock-runtime',
             region_name='ap-southeast-1'  # APAC region
         )
         logger.info("Bedrock client initialized successfully")
+        print("DEBUG: Bedrock client created successfully")
     except Exception as e:
         logger.error(f"Failed to initialize Bedrock client: {e}")
+        print(f"DEBUG: Failed to create Bedrock client: {e}")
         return None
     
     while ret is None and retries < max_retries:
         try:
             start_time = time.time()
             logger.info("Creating Bedrock API request")
+            print(f"DEBUG: Attempting API call, retry {retries + 1}/{max_retries}")
             
             response = bedrock_client.invoke_model(**config)
+            print("DEBUG: invoke_model call successful")
             response_body = json.loads(response.get('body').read())
+            print(f"DEBUG: Response received: {len(str(response_body))} characters")
             
             # Format response to match expected structure
             class BedrockResponse:

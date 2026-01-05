@@ -484,16 +484,20 @@ Notes for using the `str_replace` command:
 
 class BedrockChatDecoder(DecoderBase):
     def __init__(self, name: str, logger, **kwargs) -> None:
+        logger.info(f"BedrockChatDecoder init started with model: {name}")
         super().__init__(name, logger, **kwargs)
+        logger.info(f"BedrockChatDecoder init completed")
 
     def codegen(
             self, message: str, num_samples: int = 1, prompt_cache: bool = False
     ) -> List[dict]:
+        self.logger.info(f"BedrockChatDecoder.codegen started with samples: {num_samples}")
         if self.temperature == 0:
             assert num_samples == 1
 
         trajs = []
-        for _ in range(num_samples):
+        for i in range(num_samples):
+            self.logger.info(f"Creating bedrock config for sample {i+1}/{num_samples}")
             config = create_bedrock_config(
                 message=message,
                 max_tokens=self.max_new_tokens,
@@ -501,9 +505,11 @@ class BedrockChatDecoder(DecoderBase):
                 batch_size=1,
                 model=self.name,
             )
+            self.logger.info(f"Config created, calling request_bedrock_engine")
             ret = request_bedrock_engine(
                 config, self.logger,
             )
+            self.logger.info(f"request_bedrock_engine returned: {ret is not None}")
             if ret:
                 print(ret)
                 trajs.append(
