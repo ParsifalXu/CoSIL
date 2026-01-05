@@ -220,11 +220,17 @@ def request_bedrock_engine(config, logger, max_retries=40, timeout=500):
     ret = None
     retries = 0
     
-    # Initialize Bedrock client
-    bedrock_client = boto3.client(
-        'bedrock-runtime',
-        region_name='ap-southeast-1'  # APAC region
-    )
+    try:
+        # Initialize Bedrock client
+        logger.info("Initializing Bedrock client...")
+        bedrock_client = boto3.client(
+            'bedrock-runtime',
+            region_name='ap-southeast-1'  # APAC region
+        )
+        logger.info("Bedrock client initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize Bedrock client: {e}")
+        return None
     
     while ret is None and retries < max_retries:
         try:
