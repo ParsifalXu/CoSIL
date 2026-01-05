@@ -514,7 +514,7 @@ class BedrockChatDecoder(DecoderBase):
                 print(ret)
                 trajs.append(
                     {
-                        "response": ret.content[0]['text'] if ret.content and ret.content[0].get('text') else "",
+                        "response": ret.content[0].get('text', '') if ret.content and len(ret.content) > 0 else "",
                         "usage": {
                             "completion_tokens": ret.usage.output_tokens,
                             "prompt_tokens": ret.usage.input_tokens,

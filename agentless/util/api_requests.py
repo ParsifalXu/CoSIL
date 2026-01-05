@@ -196,10 +196,26 @@ def create_bedrock_config(
     system_message: str = "You are a helpful assistant.",
     model: str = "apac.anthropic.claude-3-5-sonnet-20241022-v2:0",
 ) -> Dict:
+    # Format messages correctly for Bedrock Claude API
     if isinstance(message, list):
-        messages = message
+        # Filter out system messages and reformat
+        formatted_messages = []
+        for msg in message:
+            if msg.get("role") == "system":
+                # Skip system messages, we'll use the system parameter
+                continue
+            elif msg.get("role") in ["user", "assistant"]:
+                formatted_messages.append({
+                    "role": msg["role"],
+                    "content": msg["content"]
+                })
+        messages = formatted_messages
     else:
         messages = [{"role": "user", "content": message}]
+    
+    # Ensure we have at least one message
+    if not messages:
+        messages = [{"role": "user", "content": str(message)}]
     
     config = {
         "modelId": model,

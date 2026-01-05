@@ -199,10 +199,27 @@ def create_bedrock_config(
     model: str = "apac.anthropic.claude-3-5-sonnet-20241022-v2:0",
 ) -> Dict:
     print(f"DEBUG: create_bedrock_config called with model: {model}")
+    
+    # Format messages correctly for Bedrock Claude API
     if isinstance(message, list):
-        messages = message
+        # Filter out system messages and reformat
+        formatted_messages = []
+        for msg in message:
+            if msg.get("role") == "system":
+                # Skip system messages, we'll use the system parameter
+                continue
+            elif msg.get("role") in ["user", "assistant"]:
+                formatted_messages.append({
+                    "role": msg["role"],
+                    "content": msg["content"]
+                })
+        messages = formatted_messages
     else:
         messages = [{"role": "user", "content": message}]
+    
+    # Ensure we have at least one message
+    if not messages:
+        messages = [{"role": "user", "content": str(message)}]
     
     body_content = {
         "anthropic_version": "bedrock-2023-05-31",
@@ -218,7 +235,8 @@ def create_bedrock_config(
         "accept": "application/json",
         "body": json.dumps(body_content)
     }
-    print(f"DEBUG: Bedrock config created with modelId: {config['modelId']}")
+    print(f"DEBUG: Bedrock config created with {len(messages)} messages")
+    print(f"DEBUG: Messages roles: {[msg['role'] for msg in messages]}")
     return config
 
 
