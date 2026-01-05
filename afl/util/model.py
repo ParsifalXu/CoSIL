@@ -505,6 +505,7 @@ class BedrockChatDecoder(DecoderBase):
                 config, self.logger,
             )
             if ret:
+                print(ret)
                 trajs.append(
                     {
                         "response": ret.content[0]['text'] if ret.content and ret.content[0].get('text') else "",
