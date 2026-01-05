@@ -237,7 +237,7 @@ def main():
         "--backend",
         type=str,
         default="openai",
-        choices=["openai", "deepseek", "anthropic", "claude"],
+        choices=["openai", "deepseek", "anthropic", "claude", "bedrock"],
     )
     parser.add_argument(
         "--dataset",
