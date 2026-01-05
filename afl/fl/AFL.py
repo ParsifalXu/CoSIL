@@ -72,6 +72,7 @@ class AFL(FL):
             temperature=0.85,
             batch_size=1,
         )
+        print("Check point")
         traj = model.codegen(message, num_samples=1)[0]
         bug_report_clarified = self._parse_output(traj["response"])
         return bug_report_clarified
