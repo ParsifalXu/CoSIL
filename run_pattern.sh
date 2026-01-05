@@ -6,7 +6,7 @@ export HF_ENDPOINT=https://hf-mirror.com
 # Available backends: openai, deepseek, claude, anthropic, o1, bedrock
 # For AWS Bedrock with Claude 3.5 Sonnet:
 models=("claude-3.5-sonnet-bedrock")
-model_names=("anthropic.claude-3-5-sonnet-20241022-v2:0")
+model_names=("apac.anthropic.claude-3-5-sonnet-20241022-v2:0")
 backend=("bedrock")
 
 # models=("gpt-4o")

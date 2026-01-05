@@ -196,7 +196,7 @@ def create_bedrock_config(
     temperature: float = 1,
     batch_size: int = 1,  # Parameter kept for consistency but not used in Bedrock API
     system_message: str = "You are a helpful assistant.",
-    model: str = "anthropic.claude-3-5-sonnet-20241022-v2:0",
+    model: str = "apac.anthropic.claude-3-5-sonnet-20241022-v2:0",
 ) -> Dict:
     if isinstance(message, list):
         messages = message
