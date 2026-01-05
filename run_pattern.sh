@@ -3,9 +3,15 @@ export PROJECT_FILE_LOC="repo_structures"
 export HF_ENDPOINT=https://hf-mirror.com
 
 # Fault Localization
-models=("gpt-4o")
-model_names=("gpt-4o-2024-05-13")
-backend=("openai")
+# Available backends: openai, deepseek, claude, anthropic, o1, bedrock
+# For AWS Bedrock with Claude 3.5 Sonnet:
+models=("claude-3.5-sonnet-bedrock")
+model_names=("anthropic.claude-3-5-sonnet-20241022-v2:0")
+backend=("bedrock")
+
+# models=("gpt-4o")
+# model_names=("gpt-4o-2024-05-13")
+# backend=("openai")
 threads=200
 
 for i in "${!models[@]}"; do

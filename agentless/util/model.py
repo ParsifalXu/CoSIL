@@ -2,7 +2,7 @@ import json
 from abc import ABC, abstractmethod
 from typing import List
 
-from agentless.util.api_requests import create_chatgpt_config, request_chatgpt_engine, create_anthropic_config, request_anthropic_engine
+from agentless.util.api_requests import create_chatgpt_config, request_chatgpt_engine, create_anthropic_config, request_anthropic_engine, create_bedrock_config, request_bedrock_engine
 
 
 class DecoderBase(ABC):
@@ -481,6 +481,56 @@ Notes for using the `str_replace` command:
     def is_direct_completion(self) -> bool:
         return False
 
+
+class BedrockChatDecoder(DecoderBase):
+    def __init__(self, name: str, logger, **kwargs) -> None:
+        super().__init__(name, logger, **kwargs)
+
+    def codegen(
+            self, message: str, num_samples: int = 1, prompt_cache: bool = False
+    ) -> List[dict]:
+        if self.temperature == 0:
+            assert num_samples == 1
+
+        trajs = []
+        for _ in range(num_samples):
+            config = create_bedrock_config(
+                message=message,
+                max_tokens=self.max_new_tokens,
+                temperature=self.temperature,
+                batch_size=1,
+                model=self.name,
+            )
+            ret = request_bedrock_engine(
+                config, self.logger,
+            )
+            if ret:
+                trajs.append(
+                    {
+                        "response": ret.content[0]['text'] if ret.content and ret.content[0].get('text') else "",
+                        "usage": {
+                            "completion_tokens": ret.usage.output_tokens,
+                            "prompt_tokens": ret.usage.input_tokens,
+                        },
+                    }
+                )
+            else:
+                trajs.append(
+                    {
+                        "response": "",
+                        "usage": {
+                            "completion_tokens": 0,
+                            "prompt_tokens": 0,
+                        },
+                    }
+                )
+
+        return trajs
+
+    def is_direct_completion(self) -> bool:
+        return False
+
+
 def make_model(
     model: str,
     backend: str,
@@ -523,6 +573,14 @@ def make_model(
         )
     elif backend == "o1":
         return O1ChatDecoder(
+            name=model,
+            logger=logger,
+            batch_size=batch_size,
+            max_new_tokens=max_tokens,
+            temperature=temperature,
+        )
+    elif backend == "bedrock":
+        return BedrockChatDecoder(
             name=model,
             logger=logger,
             batch_size=batch_size,

@@ -4,6 +4,8 @@ from typing import Dict, Union
 import openai
 import anthropic
 import tiktoken
+import boto3
+import json
 
 
 # def num_tokens_from_messages(message, model="gpt-3.5-turbo-0301"):
@@ -186,6 +188,78 @@ def request_anthropic_engine(
     logger.info(ret)
 
     return ret
+
+
+def create_bedrock_config(
+    message: Union[str, list],
+    max_tokens: int,
+    temperature: float = 1,
+    batch_size: int = 1,  # Parameter kept for consistency but not used in Bedrock API
+    system_message: str = "You are a helpful assistant.",
+    model: str = "anthropic.claude-3-5-sonnet-20241022-v2:0",
+) -> Dict:
+    if isinstance(message, list):
+        messages = message
+    else:
+        messages = [{"role": "user", "content": message}]
+    
+    config = {
+        "modelId": model,
+        "contentType": "application/json",
+        "accept": "application/json",
+        "body": json.dumps({
+            "anthropic_version": "bedrock-2023-05-31",
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+            "system": system_message,
+            "messages": messages
+        })
+    }
+    return config
+
+
+def request_bedrock_engine(config, logger, max_retries=40, timeout=500):
+    ret = None
+    retries = 0
+    
+    # Initialize Bedrock client
+    bedrock_client = boto3.client(
+        'bedrock-runtime',
+        region_name='ap-southeast-1'  # APAC region
+    )
+    
+    while ret is None and retries < max_retries:
+        try:
+            start_time = time.time()
+            logger.info("Creating Bedrock API request")
+            
+            response = bedrock_client.invoke_model(**config)
+            response_body = json.loads(response.get('body').read())
+            
+            # Format response to match expected structure
+            class BedrockResponse:
+                def __init__(self, response_data):
+                    self.content = response_data.get('content', [])
+                    self.usage = type('usage', (), {
+                        'input_tokens': response_data.get('usage', {}).get('input_tokens', 0),
+                        'output_tokens': response_data.get('usage', {}).get('output_tokens', 0)
+                    })()
+            
+            ret = BedrockResponse(response_body)
+            
+        except Exception as e:
+            logger.error(f"Bedrock API error: {e}", exc_info=True)
+            if time.time() - start_time >= timeout:
+                logger.warning("Request timed out. Retrying...")
+            else:
+                logger.warning("Retrying after an error...")
+            time.sleep(10 * retries)
+            
+        retries += 1
+    
+    logger.info(f"Bedrock API response: {ret}")
+    return ret
+
 
 # def request_anthropic_engine(
 #     config, logger, max_retries=40, timeout=500, prompt_cache=False
