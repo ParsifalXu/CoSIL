@@ -249,10 +249,23 @@ def request_bedrock_engine(config, logger, max_retries=40, timeout=500):
             logger.info("Creating Bedrock API request")
             print(f"DEBUG: Attempting API call, retry {retries + 1}/{max_retries}")
             
+            print(f"DEBUG: About to call invoke_model with config keys: {list(config.keys())}")
+            print(f"DEBUG: Model ID: {config.get('modelId')}")
+            print(f"DEBUG: Body length: {len(config.get('body', ''))}")
+            
             response = bedrock_client.invoke_model(**config)
             print("DEBUG: invoke_model call successful")
-            response_body = json.loads(response.get('body').read())
-            print(f"DEBUG: Response received: {len(str(response_body))} characters")
+            
+            body = response.get('body')
+            if body is None:
+                print("DEBUG: Response body is None")
+                raise Exception("No response body received")
+            
+            body_content = body.read()
+            print(f"DEBUG: Raw body content length: {len(body_content)}")
+            
+            response_body = json.loads(body_content)
+            print(f"DEBUG: Parsed response keys: {list(response_body.keys()) if response_body else 'None'}")
             
             # Format response to match expected structure
             class BedrockResponse:
@@ -264,14 +277,21 @@ def request_bedrock_engine(config, logger, max_retries=40, timeout=500):
                     })()
             
             ret = BedrockResponse(response_body)
+            print("DEBUG: BedrockResponse object created successfully")
+            break  # Exit the retry loop on success
             
         except Exception as e:
             logger.error(f"Bedrock API error: {e}", exc_info=True)
+            print(f"DEBUG: Exception in API call: {type(e).__name__}: {str(e)}")
+            if hasattr(e, 'response'):
+                print(f"DEBUG: Error response: {e.response}")
             if time.time() - start_time >= timeout:
                 logger.warning("Request timed out. Retrying...")
+                print("DEBUG: Request timed out")
             else:
                 logger.warning("Retrying after an error...")
-            time.sleep(10 * retries)
+                print(f"DEBUG: Retrying after error, sleep for {10 * retries} seconds")
+            time.sleep(min(10 * retries, 60))  # Cap sleep time at 60 seconds
             
         retries += 1
     
